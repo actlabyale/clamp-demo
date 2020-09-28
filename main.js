@@ -17,9 +17,9 @@ var config = {
 
 const clamp_val = 8 + 270; // degrees
 const clamp_rad = Phaser.Math.DegToRad(clamp_val);
-const clamp_trial = Array(5)
+const clamp_trial = Array(10)
   .fill(0)
-  .concat(Array(10).fill(1))
+  .concat(Array(30).fill(1))
   .concat(Array(10).fill(0));
 // const clamp_trial = Array(5).fill(0);
 
