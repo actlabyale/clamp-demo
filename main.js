@@ -29,6 +29,10 @@ let trials = [];
 const neutral = 0xaaaaaa;
 const go = 0x22ee22;
 
+function clamp(x, low, high) {
+  return Math.min(Math.max(x, low), high);
+}
+
 function create() {
   this.cameras.main.setBounds(
     -config.width / 2,
@@ -55,7 +59,7 @@ function create() {
     .text(
       0,
       200,
-      "Move to the circle in the center.\nWhen the target turns green,\nignore the cursor and reach\nstraight for the target.",
+      "Move to the circle in the center.\nWhen the target turns green,\nignore the cursor and reach\nstraight through the target.",
       {
         fontSize: 30,
         fontStyle: "bold",
@@ -99,12 +103,15 @@ function create() {
         let dy = pointer.movementY;
         this.raw_x += dx;
         this.raw_y += dy;
-
+        // this.raw_x = clamp(this.raw_x, -400, 400);
+        // this.raw_y = clamp(this.raw_y, -400, 400);
         // calculate extent & angle every time
         let extent = Math.sqrt(
           Math.pow(this.raw_x, 2) + Math.pow(this.raw_y, 2)
         );
         this.extent = extent;
+        //this.extent = Math.min(extent, 400);
+        //console.log(this.raw_x, this.raw_y, this.extent);
         if (this.clamped) {
           angle = clamp_rad;
           let x = extent * Math.cos(angle);
@@ -114,6 +121,9 @@ function create() {
         } else {
           this.user.x += dx;
           this.user.y += dy;
+          //   this.user.x = clamp(this.user.x, -400, 400);
+          //   this.user.y = clamp(this.user.y, -400, 400);
+          //   //console.log(this.user.x, this.user.y);
         }
 
         if (log) {
@@ -149,6 +159,12 @@ function update() {
       entering = 0;
       this.target.setFillStyle(neutral);
       t0 = 500;
+    }
+
+    if (this.extent >= 300 * 0.5) {
+      this.user.visible = false;
+    } else {
+      this.user.visible = true;
     }
     if (
       Phaser.Geom.Circle.ContainsPoint(
@@ -190,6 +206,7 @@ function update() {
     }
     if (this.extent >= 300 - 15) {
       this.clamped = false;
+      this.user.visible = false;
       trials.push(this.trial_data);
       console.log(this.trial_data);
       entering = true;
@@ -207,6 +224,7 @@ function update() {
       // all done, download data
       this.done.visible = true;
       this.instr.visible = false;
+      this.input.mouse.releasePointerLock();
       entering = false;
       var a = document.createElement("a");
       var file = new Blob([JSON.stringify(trials)], { type: "text/plain" });
