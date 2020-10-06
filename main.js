@@ -48,6 +48,11 @@ function create() {
   this.user = this.add.circle(-50, -50, 10, 0xffffff);
   this.input.setPollAlways();
 
+  var data = [0, 20, 84, 20, 84, 0, 120, 50, 84, 100, 84, 80, 0, 80];
+
+  this.guide = this.add.polygon(0, -100, data, 0xff33cc).setScale(-0.7, 0.5);
+  this.guide.visible = false;
+
   this.txt = this.add
     .text(0, -200, "Click to start.", {
       fontSize: 120,
@@ -119,12 +124,17 @@ function create() {
           this.user.x = x;
           this.user.y = y;
         } else {
-          this.user.x += dx;
-          this.user.y += dy;
+          this.user.x = this.raw_x;
+          this.user.y = this.raw_y;
           //   this.user.x = clamp(this.user.x, -400, 400);
           //   this.user.y = clamp(this.user.y, -400, 400);
           //   //console.log(this.user.x, this.user.y);
         }
+        this.user.x = clamp(this.user.x, -400, 400);
+        this.user.y = clamp(this.user.y, -400, 400);
+        // console.log(this.user.x, this.user.y);
+        let angle2 = Phaser.Math.Angle.BetweenPoints(this.user, this.guide);
+        this.guide.angle = Phaser.Math.RadToDeg(angle2);
 
         if (log) {
           this.trial_data.time.push(time);
@@ -142,6 +152,7 @@ function create() {
 var state = 0;
 var entering = 1;
 var t0 = 500;
+var t_guide = 1000;
 
 function update() {
   // clamp circle
@@ -159,12 +170,17 @@ function update() {
       entering = 0;
       this.target.setFillStyle(neutral);
       t0 = 500;
+      t_guide = 2000;
     }
-
+    t_guide -= game.loop.delta;
     if (this.extent >= 300 * 0.5) {
       this.user.visible = false;
+      if (t_guide <= 0) {
+        this.guide.visible = true;
+      }
     } else {
       this.user.visible = true;
+      this.guide.visible = false;
     }
     if (
       Phaser.Geom.Circle.ContainsPoint(
@@ -174,6 +190,7 @@ function update() {
     ) {
       t0 -= game.loop.delta;
       if (t0 <= 0) {
+        this.guide.visible = false;
         state = 2;
         entering = 1;
         this.raw_x = 0;
